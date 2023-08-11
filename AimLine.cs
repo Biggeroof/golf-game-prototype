@@ -29,7 +29,6 @@ public class AimLine : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Debug.Log(rb.velocity.magnitude);
         if (rb.velocity.magnitude < stopVelocity)
         {
             Stop();
@@ -56,7 +55,6 @@ public class AimLine : MonoBehaviour
             return;
         }
         Vector3? worldPoint = RayCastMouseClick();
-        Debug.Log(worldPoint);
         if (!worldPoint.HasValue)
         {
             return;
@@ -85,8 +83,15 @@ public class AimLine : MonoBehaviour
         );
         Vector3 direction = (horizontalMovementVector - transform.position).normalized;
         float magnitude = Vector3.Distance(transform.position, horizontalMovementVector);
-
-        rb.AddForce(direction * magnitude * shotPower);
+        //clamping applied force
+        Vector3 appliedForce = direction * magnitude * shotPower;
+        Debug.Log(appliedForce.magnitude);
+        if (appliedForce.magnitude > 1600f)
+        {
+            float multiplier = 1600f / appliedForce.magnitude;
+            appliedForce = appliedForce * multiplier;
+        }
+        rb.AddForce(appliedForce);
     }
 
     private void DrawLine(Vector3 worldPoint)
@@ -118,8 +123,8 @@ public class AimLine : MonoBehaviour
 
         Vector3 worldMousePosFar = Camera.main.ScreenToWorldPoint(screenMousePositionFar);
         Vector3 worldMousePosNear = Camera.main.ScreenToWorldPoint(screenMousePositionNear);
-        Debug.Log("mouse far" + worldMousePosFar);
-        Debug.Log("mouse near" + worldMousePosNear);
+        //Debug.Log("mouse far" + worldMousePosFar);
+        //Debug.Log("mouse near" + worldMousePosNear);
         RaycastHit hit;
         if (
             Physics.Raycast(
