@@ -4,23 +4,32 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+
 public class GameInput : MonoBehaviour
 {
     public static GameInput Instance { get; private set; }
     private PlayerInputSystem playerInputSystem;
+    public event EventHandler OnShootPerformed;
+    public event EventHandler OnJumpPerformed;
 
     private void Awake()
     {
-        Instance = this; 
+        Instance = this;
         playerInputSystem = new PlayerInputSystem();
 
         playerInputSystem.Enable();
+
+        playerInputSystem.Main.Shoot.performed += Shoot_performed;
+        playerInputSystem.Main.Jump.performed += Jump_performed;
     }
-    public Vector2 GetMovementVector()
+
+    private void Jump_performed(InputAction.CallbackContext obj)
     {
-        Vector2 inputVector = playerInputSystem.Main.Move.ReadValue<Vector2>();
-
-        return inputVector;
+        OnJumpPerformed?.Invoke(this, EventArgs.Empty);
     }
 
+    private void Shoot_performed(InputAction.CallbackContext obj)
+    {
+        OnShootPerformed?.Invoke(this, EventArgs.Empty);
+    }
 }

@@ -6,7 +6,7 @@ using UnityEngine;
 public class AimLine : MonoBehaviour
 {
     [SerializeField]
-    private float stopVelocity = .05f;
+    private float stopVelocity = .01f;
 
     [SerializeField]
     private float shotPower;
@@ -14,10 +14,22 @@ public class AimLine : MonoBehaviour
     [SerializeField]
     private LineRenderer lineRenderer;
 
+    [SerializeField]
+    private GameInput gameInput;
+
     private bool ballIsIdle;
     private bool isAiming;
+    private Vector3 lastIdlePos;
+    private float jumpPower;
 
     private Rigidbody rb;
+
+    public event EventHandler<OnToggleBallCanShootArgs> onToggleBallCanShoot;
+
+    public class OnToggleBallCanShootArgs : EventArgs
+    {
+        public bool canShoot;
+    }
 
     private void Awake()
     {
@@ -25,10 +37,33 @@ public class AimLine : MonoBehaviour
         isAiming = false;
         ballIsIdle = false;
         lineRenderer.enabled = false;
+        lastIdlePos = Vector3.zero;
+        jumpPower = 2;
+    }
+
+    private void Start()
+    {
+        GameInput.Instance.OnShootPerformed += Ball_OnShootPerformed;
+        GameInput.Instance.OnJumpPerformed += Ball_OnJumpPerformed;
+    }
+
+    private void Ball_OnJumpPerformed(object sender, EventArgs e)
+    {
+        Jump();
+    }
+
+    private void Ball_OnShootPerformed(object sender, EventArgs e)
+    {
+        processAimVectorVisual(true);
     }
 
     private void FixedUpdate()
     {
+        onToggleBallCanShoot?.Invoke(
+            this,
+            new OnToggleBallCanShootArgs { canShoot = GetCanShoot() }
+        );
+        Debug.Log(rb.velocity);
         if (rb.velocity.magnitude < stopVelocity)
         {
             Stop();
@@ -37,7 +72,19 @@ public class AimLine : MonoBehaviour
         {
             ballIsIdle = false;
         }
-        processAimVectorVisual();
+        //Debug.Log(rb.velocity);
+        if (CheckVoidPos(rb.velocity))
+        {
+            gameObject.transform.position = lastIdlePos;
+            Stop();
+        }
+
+        processAimVectorVisual(false);
+    }
+
+    private bool GetCanShoot()
+    {
+        return rb.velocity.magnitude < stopVelocity;
     }
 
     private void OnMouseDown()
@@ -48,7 +95,7 @@ public class AimLine : MonoBehaviour
         }
     }
 
-    private void processAimVectorVisual()
+    private void processAimVectorVisual(bool shootInput)
     {
         if (!ballIsIdle || !isAiming)
         {
@@ -64,7 +111,7 @@ public class AimLine : MonoBehaviour
             DrawLine(worldPoint.Value);
 
             //check if click is raised
-            if (Input.GetMouseButtonUp(0))
+            if (shootInput)
             {
                 Shoot((Vector3)worldPoint);
             }
@@ -103,9 +150,13 @@ public class AimLine : MonoBehaviour
 
     private void Stop()
     {
-        rb.velocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
-        ballIsIdle = true;
+        if (Physics.Raycast(transform.position, new Vector3(0, -1, 0), 1f))
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            ballIsIdle = true;
+            lastIdlePos = gameObject.transform.position;
+        }
     }
 
     private Vector3? RayCastMouseClick()
@@ -140,6 +191,24 @@ public class AimLine : MonoBehaviour
         else
         {
             return null;
+        }
+    }
+
+    private bool CheckVoidPos(Vector3 velocity)
+    {
+        if (velocity.y < -12.87)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private void Jump()
+    {
+        if (rb.velocity != Vector3.zero)
+        {
+            Vector3 jumpForce = new Vector3(0, 300f * jumpPower, 0);
+            rb.AddForce(jumpForce);
         }
     }
 }
