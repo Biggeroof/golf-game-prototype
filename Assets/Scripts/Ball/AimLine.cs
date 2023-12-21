@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 //handle the aim line drawing
 public class AimLine : MonoBehaviour
@@ -68,11 +69,12 @@ public class AimLine : MonoBehaviour
     {
         if (
             ball.getIsStopped()
-            && checkMouseOnBall(RayCastMouseClick())
             && CameraSwitcher.Instance.getCurrentCamera() == cam
+            && checkMouseOnBall(RayCastMouseClick())
         )
         {
             isAiming = true;
+            lineRenderer.enabled = true;
         }
     }
 
@@ -140,8 +142,7 @@ public class AimLine : MonoBehaviour
 
         Vector3 worldMousePosFar = Camera.main.ScreenToWorldPoint(screenMousePositionFar);
         Vector3 worldMousePosNear = Camera.main.ScreenToWorldPoint(screenMousePositionNear);
-        //Debug.Log("mouse far" + worldMousePosFar);
-        //Debug.Log("mouse near" + worldMousePosNear);
+
         RaycastHit hit;
         if (
             Physics.Raycast(
@@ -165,8 +166,8 @@ public class AimLine : MonoBehaviour
     {
         if (pos.HasValue)
         {
-            return Math.Abs(pos.Value.x - ball.transform.position.x) < 0.06f
-                && Math.Abs(pos.Value.z - ball.transform.position.z) < 0.06f;
+            return Math.Abs(pos.Value.x - ball.transform.position.x) < 1f
+                && Math.Abs(pos.Value.z - ball.transform.position.z) < 1f;
         }
         else
         {

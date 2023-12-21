@@ -17,8 +17,8 @@ public class GameWinUI : MonoBehaviour
 
     private void Instance_OnGoalReached(object sender, System.EventArgs e)
     {
-        strokeText.text = StrokeCountManager.instance.getPar().ToString();
         this.gameObject.SetActive(true);
+        strokeText.text = StrokeCountManager.instance.getMostRecentPar().ToString();
     }
 
     // Update is called once per frame

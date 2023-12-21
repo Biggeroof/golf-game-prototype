@@ -12,6 +12,9 @@ public class StrokeCountManager : MonoBehaviour
 
     private int par;
 
+    private int lastParIndex = -1;
+    private int[] prevPars;
+
     private void Awake()
     {
         instance = this;
@@ -22,10 +25,13 @@ public class StrokeCountManager : MonoBehaviour
         par = 0;
         ball.OnShootPerformed += Ball_OnShootPerformed;
         GoalManager.Instance.OnGoalReached += Ball_OnGoalReached;
+        prevPars = new int[99];
     }
 
     private void Ball_OnGoalReached(object sender, EventArgs e)
     {
+        lastParIndex += 1;
+        prevPars[lastParIndex] = par;
         par = 0;
     }
 
@@ -37,5 +43,10 @@ public class StrokeCountManager : MonoBehaviour
     public int getPar()
     {
         return par;
+    }
+
+    public int getMostRecentPar()
+    {
+        return prevPars[lastParIndex];
     }
 }

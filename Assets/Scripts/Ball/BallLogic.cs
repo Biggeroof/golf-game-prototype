@@ -65,6 +65,7 @@ public class BallLogic : MonoBehaviour
             if (CheckVoidPos(rb.velocity))
             {
                 gameObject.transform.position = lastIdlePos;
+
                 Stop(false);
             }
             if (!ballIsIdle)
