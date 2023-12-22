@@ -50,7 +50,7 @@ public class AimLine : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         if (
             GoalManager.Instance.getInHole() == false

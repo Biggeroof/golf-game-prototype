@@ -26,6 +26,9 @@ public class BallLogic : MonoBehaviour
     [SerializeField]
     private ShotRefPlane referencePlane;
 
+    [SerializeField]
+    private GravitationalPull hole;
+
     private bool ballIsIdle;
     private Vector3 lastIdlePos;
     private float jumpPower;
@@ -103,6 +106,10 @@ public class BallLogic : MonoBehaviour
                 if (rb.velocity.magnitude > stopVelocity)
                 {
                     belowThresHoldDuration = 0f;
+                }
+                if (hole != null)
+                {
+                    hole.Attract(rb);
                 }
             }
         }
