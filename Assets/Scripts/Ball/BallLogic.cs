@@ -15,7 +15,10 @@ public class BallLogic : MonoBehaviour
     private bool forceApplied;
 
     [SerializeField]
-    private float shotPower;
+    private float shotPower = 100;
+
+    [SerializeField]
+    private float fastShotPower = 200;
 
     [SerializeField]
     private LayerMask floorLayerMask;
@@ -36,13 +39,16 @@ public class BallLogic : MonoBehaviour
     private Rigidbody rb;
     private float belowThresHoldDuration;
 
+    private bool freeJumpActive;
+    private bool fastBallActive;
+
     public EventHandler OnShootPerformed;
 
     private void Ball_OnJumpPerformed(object sender, EventArgs e)
     {
         if (GoalManager.Instance.getInHole() == false)
         {
-            Jump(false);
+            Jump(freeJumpActive);
         }
     }
 
@@ -59,6 +65,18 @@ public class BallLogic : MonoBehaviour
     {
         GameInput.Instance.OnJumpPerformed += Ball_OnJumpPerformed;
         lastIdlePos = transform.position;
+        PowerupManager.instance.OnFastBallActivate += Instance_OnFastBallActivate;
+        PowerupManager.instance.OnFreeJumpActivate += Instance_OnFreeJumpActivate;
+    }
+
+    private void Instance_OnFreeJumpActivate(object sender, EventArgs e)
+    {
+        freeJumpActive = true;
+    }
+
+    private void Instance_OnFastBallActivate(object sender, EventArgs e)
+    {
+        fastBallActive = true;
     }
 
     void FixedUpdate()
@@ -123,10 +141,14 @@ public class BallLogic : MonoBehaviour
         Vector3 direction = (horizontalMovementVector - transform.position).normalized;
         float magnitude = Vector3.Distance(transform.position, horizontalMovementVector);
 
-        Vector3 appliedForce = direction * magnitude * shotPower;
-        if (appliedForce.magnitude > 300f)
+        Vector3 appliedForce =
+            fastBallActive == true
+                ? direction * magnitude * fastShotPower
+                : direction * magnitude * shotPower;
+
+        if (appliedForce.magnitude > 600f)
         {
-            float multiplier = 300f / appliedForce.magnitude;
+            float multiplier = 600f / appliedForce.magnitude;
             appliedForce = appliedForce * multiplier;
         }
 
@@ -152,6 +174,9 @@ public class BallLogic : MonoBehaviour
             lastIdlePos = gameObject.transform.position;
             referencePlane.ToggleEnable();
             referencePlane.UpdateLocation(GetBottomTransform.getBottomForSphere(this.gameObject));
+            //shot after powerups are activated, disable them
+            freeJumpActive = false;
+            fastBallActive = false;
         }
     }
 

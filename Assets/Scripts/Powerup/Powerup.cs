@@ -10,6 +10,7 @@ public class Powerup : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         onContact?.Invoke(this, EventArgs.Empty);
+        gameObject.SetActive(false);
         //hide the mesh and collider for the powerup for a certain amount of time/permanently
     }
 }
